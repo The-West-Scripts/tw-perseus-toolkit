@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "babel-minify src/TW-Perseus-Toolkit.js --out-file dist/tw-perseus-toolkit.min.js && cat src/Script-Header.js dist/tw-perseus-toolkit.min.js > dist/tw-perseus-toolkit.user.js"
+  },
+  "devDependencies": {
+    "babel-minify": "^0.4.3",
+    "eslint": "^4.19.1"
+  }
+}
