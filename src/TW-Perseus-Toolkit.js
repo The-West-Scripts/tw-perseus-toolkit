@@ -61,9 +61,59 @@
             },
         };
 
+        TWPT.CinemaSkipButton = {
+            init () {
+                const button = new west.gui.Button("Skip ad", () => {
+                    CinemaWindow.controller("rewards");
+                });
+
+                // eslint-disable-next-line camelcase
+                CinemaWindow.backup_cotroller = CinemaWindow.controller;
+                CinemaWindow.controller = function (key) {
+                    console.log("CONTROLLER", key);
+                    button.setVisible(false);
+                    button.disable();
+
+                    if (key === "video") {
+                        let count = 5;
+                        const countDown = () => {
+                            if (count > 0) {
+                                button.setCaption(`Skip ad (${count})`);
+                                setTimeout(countDown, 1000);
+                                count--;
+                            } else {
+                                button.setCaption("Skip ad");
+                                button.enable();
+                            }
+                        };
+                        button.setVisible(true);
+                        countDown();
+                    }
+
+                    // If there is no ad available you should be able to get the rewards.
+                    if (key === "noVideo") {
+                        return CinemaWindow.backup_cotroller("rewards");
+                    }
+
+                    return CinemaWindow.backup_cotroller(key);
+                };
+
+                // eslint-disable-next-line camelcase
+                CinemaWindow.backup_open = CinemaWindow.open;
+                CinemaWindow.open = function (townId) {
+                    CinemaWindow.backup_open(townId);
+                    const header = $(this.window.divMain).find(".tw2gui_inner_window_title");
+                    button.divMain.setAttribute("style", "margin-left: 20px; margin-top: -20px");
+                    button.setVisible(false);
+                    header.append(button.getMainDiv());
+                };
+            },
+        };
+
         try {
             TWPT.Updater.init();
             TWPT.JobHighlighter.init();
+            TWPT.CinemaSkipButton.init();
         } catch (err) {
             console.log(err.stack);
         }

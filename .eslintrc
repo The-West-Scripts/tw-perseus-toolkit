@@ -9,6 +9,7 @@
   },
   "globals": {
     "JobList": true,
+    "CinemaWindow": true,
     "Map": true,
     "west": true,
     "Character": true,
