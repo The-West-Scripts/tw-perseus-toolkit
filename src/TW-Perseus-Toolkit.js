@@ -8,7 +8,7 @@
 }(() => {
     $(document).ready(() => {
         const TWPT = {
-            version: "0.0.1",
+            version: "0.1.0",
         };
 
         TWPT.Updater = {
@@ -25,7 +25,7 @@
                                 }</span>`, west.gui.Dialog.SYS_WARNING
                         ).addButton("Update", () => {
                             updateMessage.hide();
-                            location.href = "TODO";
+                            location.href = "https://greasyfork.org/scripts/40902-the-west-duel-warner/code/The%20West%20Duel%20Warner.user.js";
                         }).addButton("cancel").show();
                     }
                 });
