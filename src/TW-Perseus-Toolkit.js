@@ -31,6 +31,7 @@
                 CinemaSkipButton: true,
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
+                MoreFifteenSec: true,
             },
             preferences: {},
             currentZoom: 1,
@@ -109,6 +110,10 @@
                 setCheckBox("CinemaSkipButton", "Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).");
                 setCheckBox("ZoomMap", "Enable the Zoom feature (hover the minimap icon on the top right and scroll up / down to zoom out / in).");
                 setCheckBox("DisablePremiumNotifications", "Suppress energy refill and automation premium notifications.");
+
+                setTitle("Perseus Toolkit Extended");
+                setCheckBox("MoreFifteenSec", "Adds buttons to jobs which allow you to start a job 25 / 50 / unlimited times.");
+
                 setTitle("Feedback");
                 scrollPane.appendContent("<ul style=\"margin-left:15px;line-height:18px;\">" +
                     "<li>Send a message to <a target=\"_blank\" href=\"https://www.the-west.de/?ref=west_invite_linkrl&player_id=83071&world_id=1&hash=0dc5\">Mr. Perseus on world DE1</a></li>" +
@@ -225,6 +230,13 @@
                 Premium.checkForAutomationPremium = function (callback, failCallback) {
                     if (typeof failCallback !== "undefined") return failCallback();
                 };
+            },
+        };
+
+        TWPT.MoreFifteenSec = {
+            init () {
+                // TODO
+                // setInterval(function() {$(".job_durationbar.job_durationbar_short").click();}, 16000);
             },
         };
 
