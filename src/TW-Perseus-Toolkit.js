@@ -29,8 +29,10 @@
             defaultPreferences: {
                 JobHighlighter: true,
                 CinemaSkipButton: true,
+                ZoomMap: true,
             },
             preferences: {},
+            currentZoom: 1,
         };
 
         TWPT.Updater = {
@@ -104,6 +106,7 @@
                 setTitle("Enabled Features");
                 setCheckBox("JobHighlighter", "Enable Silver / Gold job highlighter (doesn't search for them on it's own).");
                 setCheckBox("CinemaSkipButton", "Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).");
+                setCheckBox("ZoomMap", "Enable the Zoom feature (hover the minimap icon on the top right and scroll up / down to zoom out / in).");
                 setTitle("Feedback");
                 scrollPane.appendContent("<ul style=\"margin-left:15px;line-height:18px;\">" +
                     "<li>Send a message to <a target=\"_blank\" href=\"https://www.the-west.de/?ref=west_invite_linkrl&player_id=83071&world_id=1&hash=0dc5\">Mr. Perseus on world DE1</a></li>" +
@@ -193,6 +196,20 @@
                     button.setVisible(false);
                     header.append(button.getMainDiv());
                 };
+            },
+        };
+
+        TWPT.ZoomMap = {
+            init () {
+                $(window).bind("mousewheel", (event) => {
+                    if ($("#ui_minimap").is(":hover")) {
+                        if (event.originalEvent.wheelDelta >= 0) {
+                            if (TWPT.currentZoom < 1.95) TWPT.currentZoom += 0.1;
+                        } else {
+                            if (TWPT.currentZoom > 0.75) TWPT.currentZoom -= 0.1;
+                        }
+                    }
+                });
             },
         };
 
