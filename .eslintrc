@@ -19,6 +19,7 @@
     "ItemManager": true,
     "PlayerProfileWindow": true,
     "PlayerProfileMain": true,
+    "Premium": true,
     "UserMessage": true
   },
   "rules": {

@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.1.1
+// @version     0.2.0
 // @grant       none
 // ==/UserScript==
 
@@ -24,12 +24,13 @@
             base64: {
                 menuImage: "url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABmgAwAEAAAAAQAAABkAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIABkAGQMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/3QAEAAL/2gAMAwEAAhEDEQA/APHLTT9Z1bU7101HUApunA2t8qgHp0rqbXwHq0ttuOo6kGI67zXpX7PEA1bw5rGmGCF3S6llRmAGMOSQTjjI5r0iNLRtEvpBEgCNEA2QNoO7+eBXwmPzDFqs4wdld213sfQUIUlH3o3/AOCfJHjfw54i8PKsrajqSLhHG9iMgkeorpvt93/z9Tf9917h+0FdaMPAWvQ3yJNeyWkK2I8v5rVgvLFv4geDtFeBbx6frXuZZiJ1qT53do4qyXNeKsf/0PP/AIdePv8AhHW1TTGvmtop7lvMHK5AbPb612yfEjRfIZBfwFWxkZPOOmRXmV1/rR9Kb2r5fE5LSxE/aOTR7VLHSpR5eVMu/E74gx6zaPZ28jTGQqhbDEkZ6fhUGW/55tUEf+tH1FSV3YXDQwkOSBz1q0q0rs//2Q==')",
             },
-            version: "0.1.1",
+            version: "0.2.0",
             settingsKey: "TWPT_preferences",
             defaultPreferences: {
                 JobHighlighter: true,
                 CinemaSkipButton: true,
                 ZoomMap: true,
+                DisablePremiumNotifications: true,
             },
             preferences: {},
             currentZoom: 1,
@@ -107,6 +108,7 @@
                 setCheckBox("JobHighlighter", "Enable Silver / Gold job highlighter (doesn't search for them on it's own).");
                 setCheckBox("CinemaSkipButton", "Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).");
                 setCheckBox("ZoomMap", "Enable the Zoom feature (hover the minimap icon on the top right and scroll up / down to zoom out / in).");
+                setCheckBox("DisablePremiumNotifications", "Suppress energy refill and automation premium notifications.");
                 setTitle("Feedback");
                 scrollPane.appendContent("<ul style=\"margin-left:15px;line-height:18px;\">" +
                     "<li>Send a message to <a target=\"_blank\" href=\"https://www.the-west.de/?ref=west_invite_linkrl&player_id=83071&world_id=1&hash=0dc5\">Mr. Perseus on world DE1</a></li>" +
@@ -208,8 +210,21 @@
                         } else {
                             if (TWPT.currentZoom > 0.75) TWPT.currentZoom -= 0.1;
                         }
+
+                        document.getElementById("map").style.zoom = TWPT.currentZoom;
                     }
                 });
+            },
+        };
+
+        TWPT.DisablePremiumNotifications = {
+            init () {
+                Premium.checkForEnergyPremium = function (callback, failCallback) {
+                    if (typeof failCallback !== "undefined") return failCallback();
+                };
+                Premium.checkForAutomationPremium = function (callback, failCallback) {
+                    if (typeof failCallback !== "undefined") return failCallback();
+                };
             },
         };
 
