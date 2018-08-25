@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        The West Perseus Toolkit
+// @name        The West Perseus Toolkit Extended
 // @author      Mr. Perseus
 // @namespace   tw-perseus
 // @description Useful tools for The West.
@@ -32,9 +32,11 @@
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
                 MoreFifteenSec: true,
+                DuelClothCalc: true,
             },
             preferences: {},
             currentZoom: 1,
+            serverUrl: window.location.hostname.split(/[.0-9]+/)[0],
         };
 
         TWPT.Updater = {
@@ -113,6 +115,7 @@
 
                 setTitle("Perseus Toolkit Extended");
                 setCheckBox("MoreFifteenSec", "Adds buttons to jobs which allow you to start a job 25 / 50 / unlimited times.");
+                setCheckBox("DuelClothCalc", "Enable duel cloth calc (hover a persons profile picture to calculate duel values). WARNING: this overwrites bounties!");
 
                 setTitle("Feedback");
                 scrollPane.appendContent("<ul style=\"margin-left:15px;line-height:18px;\">" +
@@ -237,6 +240,236 @@
             init () {
                 // TODO
                 // setInterval(function() {$(".job_durationbar.job_durationbar_short").click();}, 16000);
+            },
+        };
+
+        TWPT.DuelClothCalc = {
+            init () {
+// eslint-disable-next-line camelcase
+                PlayerProfileMain.backup_setWear = PlayerProfileMain.setWear;
+                PlayerProfileMain.setWear = function () {
+                    PlayerProfileMain.backup_setWear.apply(this, arguments);
+
+                    const playerLevel = this.resp.level;
+
+                    let weaponId = 0;
+
+                    const itemKeys = [];
+
+
+                    Object.keys(this.resp.wear).forEach((key) => {
+                        if (this.resp.wear[key] &&
+                            (key === "animal" || key === "yield" /*Product*/ ||
+                                key === "head" || key === "body" || key === "pants" || key === "foot" ||
+                                key === "neck" || key === "belt" || key === "right_arm" || key === "left_arm")) {
+                            if (key === "right_arm") {
+                                weaponId = this.resp.wear[key];
+                            }
+                            itemKeys.push(this.resp.wear[key]);
+                        }
+                    });
+
+                    const itemObjects = TWPT.DuelClothCalc.getItemObjects(itemKeys);
+                    const sets = TWPT.DuelClothCalc.getSetsNumbers(itemObjects);
+                    const setObjects = TWPT.DuelClothCalc.getSetData(sets);
+
+                    const values = TWPT.DuelClothCalc.calculateValues(itemObjects, playerLevel, sets, setObjects);
+                    const popupData = TWPT.DuelClothCalc.getPopupData(values);
+
+                    const duelistPopup = TWPT.DuelClothCalc.generateNpcPopup(popupData, weaponId, this.resp);
+                    const jqueryAvatar = this.window.find("div.profileavatar");
+                    jqueryAvatar.attr("title", duelistPopup);
+
+                    const overlayClass = this.window.find("div.overlay");
+                    overlayClass.removeClass("overlay");
+                };
+            },
+
+            getItemObjects (itemKeys) {
+                const itemObjects = [];
+                itemKeys.forEach((key) => itemObjects.push(ItemManager.get(key)));
+
+                return itemObjects;
+            },
+
+            calculateValues (itemObjects, playerLevel, sets, setObjects) {
+                const values = {
+                    strength: 0,
+                    flexibility: 0,
+                    dexterity: 0,
+                    charisma: 0,
+                    /*Strength*/
+                    build: 0,
+                    punch: 0,
+                    tough: 0,
+                    endurance: 0,
+                    health: 0,
+                    /*flexibility*/
+                    ride: 0,
+                    reflex: 0,
+                    dodge: 0,
+                    hide: 0,
+                    swim: 0,
+                    /*Dexterity*/
+                    aim: 0,
+                    shot: 0,
+                    pitfall: 0,
+// eslint-disable-next-line camelcase
+                    finger_dexterity: 0,
+                    repair: 0,
+                    /*charisma*/
+                    leadership: 0,
+                    tactic: 0,
+                    trade: 0,
+                    animal: 0,
+                    appearance: 0,
+                };
+
+                itemObjects.forEach((itemObject) => {
+                    const newValuesBonus = TWPT.DuelClothCalc.getBonusObjectValues(itemObject.bonus.item);
+                    TWPT.DuelClothCalc.factorizeValues(newValuesBonus, playerLevel, itemObject.item_level);
+
+                    TWPT.DuelClothCalc.addToValues(values, newValuesBonus);
+
+                    const newValuesSimple = TWPT.DuelClothCalc.getSimpleObjectValues(itemObject);
+                    TWPT.DuelClothCalc.addToValues(values, newValuesSimple);
+                });
+
+                TWPT.DuelClothCalc.addSetsToValues(sets, values, playerLevel, setObjects);
+
+                return values;
+            },
+
+            factorizeValues (values, playerLevel, itemLevel) {
+                const itemPercent = itemLevel ? 1 + (itemLevel / 10) : 1;
+                Object.keys(values).forEach((key) => {
+                    const ceilValue = Math.ceil(values[key] * playerLevel);
+                    values[key] = Math.round(ceilValue * itemPercent);
+                    if (values[key] === ceilValue && itemPercent !== 1) {
+                        values[key]++;
+                    }
+                });
+            },
+
+            addToValues (values, newValues) {
+                Object.keys(newValues).forEach((key) => values[key] = values[key] ? values[key] + newValues[key] : newValues[key]);
+            },
+
+            getBonusObjectValues (item) {
+                const values = {};
+
+                item.forEach((valueObj) => {
+                    if (valueObj.type === "character" && valueObj.key === "level" && /*valueObj.roundingMethod === "ceil" &&*/
+                        (valueObj.bonus.type === "skill" || valueObj.bonus.type === "attribute")) {
+                        values[valueObj.bonus.name] = valueObj.bonus.value;
+                    }
+                });
+
+                return values;
+            },
+
+            getSimpleSetObjectValues (setObject) {
+                const values = {};
+
+                setObject.forEach((key) => {
+                    if (key.type === "attribute" || key.type === "skill") {
+                        values[key.name] = key.value;
+                    }
+                });
+
+                return values;
+            },
+
+            getSimpleObjectValues (itemObject) {
+                const values = {};
+
+                Object.keys(itemObject.bonus.skills).forEach((key) => values[key] = itemObject.bonus.skills[key]);
+                Object.keys(itemObject.bonus.attributes).forEach((key) => values[key] = itemObject.bonus.attributes[key]);
+
+                return values;
+            },
+
+            addSetsToValues (sets, values, playerLevel, setObjects) {
+                Object.keys(sets).forEach((key) => {
+                    const setData = setObjects[key];
+                    if (setData && setData.bonus[sets[key]]) {
+                        const valuesSetBonus = {};
+                        const valuesSetSimple = {};
+
+                        for (let index = 2; index <= sets[key]; index++) {
+                            const valuesSetBonusLevel = TWPT.DuelClothCalc.getBonusObjectValues(setData.bonus[index]);
+                            TWPT.DuelClothCalc.addToValues(valuesSetBonus, valuesSetBonusLevel);
+
+                            const valuesSetSimpleLevel = TWPT.DuelClothCalc.getSimpleSetObjectValues(setData.bonus[index]);
+                            TWPT.DuelClothCalc.addToValues(valuesSetSimple, valuesSetSimpleLevel);
+                        }
+
+                        TWPT.DuelClothCalc.factorizeValues(valuesSetBonus, playerLevel);
+
+                        TWPT.DuelClothCalc.addToValues(values, valuesSetBonus);
+                        TWPT.DuelClothCalc.addToValues(values, valuesSetSimple);
+                    }
+                });
+            },
+
+            getPopupData (values) {
+                return {
+                    shot: values.dexterity + values.shot,
+                    punch: values.strength + values.punch,
+                    aim: values.dexterity + values.aim,
+                    appearance: values.charisma + values.appearance,
+                    tactic: values.charisma + values.tactic,
+                    reflex: values.flexibility + values.reflex,
+                    dodge: values.flexibility + values.dodge,
+                    tough: values.strength + values.tough,
+                    health: values.strength + values.health,
+                };
+            },
+
+            getSetsNumbers (itemObjects) {
+                const sets = {};
+                itemObjects.forEach((itemObject) => {
+                    if (itemObject.set) {
+                        if (sets.hasOwnProperty(itemObject.set)) {
+                            sets[itemObject.set]++;
+                        } else {
+                            sets[itemObject.set] = 1;
+                        }
+                    }
+                });
+                return sets;
+            },
+
+            getSetData (sets) {
+                const setObjects = [];
+                Object.keys(sets).forEach((key) => {
+                    setObjects[key] = west.storage.ItemSetManager.get(key);
+                });
+                return setObjects;
+            },
+
+            generateNpcPopup (npcData, weaponId, character) {
+                let weapon, damage;
+                if (weaponId) {
+                    weapon = ItemManager.get(weaponId);
+                    damage = weapon.getDamage(character);
+                }
+                return `<table class="dln_npcskill_popup">${
+                        weapon ? "<tr><td colspan=\"5\" class=\"text_bold\">" + "The opponent's skill bonus" + "<br />&nbsp;</td></tr>" : ""
+                        }<tr><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_shot.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_punch.jpg" /></td>` +
+                    `<td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_aim.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_appearance.jpg" /></td><td></td></tr>` +
+                    `<tr><td class="text_bold">${npcData.shot || 0}</td><td class="text_bold">${npcData.punch || 0}</td>` +
+                    `<td class="text_bold">${npcData.aim || 0}</td><td class="text_bold">${npcData.appearance || 0
+                        }</td><td></td></tr>` +
+                    `<tr><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_tactic.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_reflex.jpg" /></td>` +
+                    `<td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_dodge.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_tough.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_health.jpg" /></td></tr>` +
+                    `<tr><td class="text_bold">${npcData.tactic || 0}</td><td class="text_bold">${npcData.reflex || 0}</td>` +
+                    `<td class="text_bold">${npcData.dodge || 0}</td><td class="text_bold">${npcData.tough || 0
+                        }</td><td class="text_bold">${npcData.health || 0}</td></tr>${weapon ?
+                        `<tr><td colspan="2" class="text_bold"><img src="${weapon.image
+                            }" /></td><td colspan="3" class="text_bold"><br />${
+                            weapon.name}<br />(` + "Damage" + `:&nbsp;${damage.min} - ${damage.max})</td></tr>` :
+                        ""}</table>`;
             },
         };
 
