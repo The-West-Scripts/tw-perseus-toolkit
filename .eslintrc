@@ -17,6 +17,7 @@
     "wman": true,
     "scriptUpdater": true,
     "ItemManager": true,
+    "JobWindow": true,
     "PlayerProfileWindow": true,
     "PlayerProfileMain": true,
     "Premium": true,

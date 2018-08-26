@@ -238,6 +238,82 @@
 
         TWPT.MoreFifteenSec = {
             init () {
+                // eslint-disable-next-line camelcase
+                JobWindow.backup_initView = JobWindow.initView;
+                JobWindow.initView = function () {
+                    JobWindow.backup_initView.apply(this, arguments);
+                    let doJobs = false;
+                    const button25 = new west.gui.Button("Start 25");
+                    const button50 = new west.gui.Button("Start 50");
+                    const button150 = new west.gui.Button("Start 150");
+
+                    const repeatJobXTimes = (amount, button) => {
+                        const clickJobFourTimes = () => {
+                            let smallCounter = 4;
+                            const clickJobOnce = () => {
+                                $(".job_durationbar.job_durationbar_short").click();
+                                smallCounter--;
+                                if (smallCounter >= 1) {
+                                    setTimeout(clickJobOnce, (Math.random() * 1000) + 200);
+                                }
+                            };
+                            clickJobOnce();
+                        };
+
+                        let bigCounter = amount;
+                        const repeatJob = () => {
+                            console.log("new iteration::", bigCounter, Character.energy, button.caption.text, doJobs);
+                            clickJobFourTimes();
+                            bigCounter = bigCounter - 4;
+                            if (bigCounter >= 1 && Character.energy > 0 && doJobs/*whichButton.caption.text.startsWith("Stop")*/) {
+                                button.setCaption(`Stop ${bigCounter}`);
+                                setTimeout(repeatJob, (Math.random() * 30000) + 55000);
+                            }
+                        };
+
+                        repeatJob();
+                    };
+
+                    const buttonOnClick = (amount, button) => {
+                        console.log("start...", button.caption.text);
+                        if (button.caption.text === `Start ${amount}`) {
+                            console.log("this", this);
+                            doJobs = true;
+                            button25.disable();
+                            button50.disable();
+                            button150.disable();
+                            button.enable();
+                            button.setCaption(`Stop ${amount}`);
+                            repeatJobXTimes(amount, button);
+                        } else {
+                            button.setCaption(`Start ${amount}`);
+                            button25.enable();
+                            button50.enable();
+                            button150.enable();
+                            doJobs = false;
+                        }
+                    };
+
+                    const styleAndAppendDiv = (button, bottom, left) => {
+                        const buttonDiv = button.getMainDiv();
+                        buttonDiv.style["z-index"] = "5";
+                        buttonDiv.style.bottom = bottom;
+                        buttonDiv.style.left = left;
+                        this.window.divMain.querySelector("div.tw2gui_window_content_pane").appendChild(button.getMainDiv());
+                    };
+
+                    console.log("This:");
+                    console.log(this);
+
+                    button25.onclick = () => buttonOnClick(25, button25);
+                    styleAndAppendDiv(button25, "140px", "300px");
+
+                    button50.onclick = () => buttonOnClick(50, button50);
+                    styleAndAppendDiv(button50, "110px", "200px");
+
+                    button150.onclick = () => buttonOnClick(150, button150);
+                    styleAndAppendDiv(button150, "80px", "100px");
+                };
                 // TODO
                 // setInterval(function() {$(".job_durationbar.job_durationbar_short").click();}, 16000);
             },
@@ -245,7 +321,7 @@
 
         TWPT.DuelClothCalc = {
             init () {
-// eslint-disable-next-line camelcase
+                // eslint-disable-next-line camelcase
                 PlayerProfileMain.backup_setWear = PlayerProfileMain.setWear;
                 PlayerProfileMain.setWear = function () {
                     PlayerProfileMain.backup_setWear.apply(this, arguments);
