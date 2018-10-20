@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.2.0
+// @version     0.2.1
 // @grant       none
 // ==/UserScript==
 
@@ -24,7 +24,7 @@
             base64: {
                 menuImage: "url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABmgAwAEAAAAAQAAABkAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIABkAGQMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/3QAEAAL/2gAMAwEAAhEDEQA/APHLTT9Z1bU7101HUApunA2t8qgHp0rqbXwHq0ttuOo6kGI67zXpX7PEA1bw5rGmGCF3S6llRmAGMOSQTjjI5r0iNLRtEvpBEgCNEA2QNoO7+eBXwmPzDFqs4wdld213sfQUIUlH3o3/AOCfJHjfw54i8PKsrajqSLhHG9iMgkeorpvt93/z9Tf9917h+0FdaMPAWvQ3yJNeyWkK2I8v5rVgvLFv4geDtFeBbx6frXuZZiJ1qT53do4qyXNeKsf/0PP/AIdePv8AhHW1TTGvmtop7lvMHK5AbPb612yfEjRfIZBfwFWxkZPOOmRXmV1/rR9Kb2r5fE5LSxE/aOTR7VLHSpR5eVMu/E74gx6zaPZ28jTGQqhbDEkZ6fhUGW/55tUEf+tH1FSV3YXDQwkOSBz1q0q0rs//2Q==')",
             },
-            version: "0.2.0",
+            version: "0.2.1",
             settingsKey: "TWPT_preferences",
             defaultPreferences: {
                 JobHighlighter: true,
@@ -345,11 +345,7 @@
                         }
                     });
 
-                    const itemObjects = TWPT.DuelClothCalc.getItemObjects(itemKeys);
-                    const sets = TWPT.DuelClothCalc.getSetsNumbers(itemObjects);
-                    const setObjects = TWPT.DuelClothCalc.getSetData(sets);
-
-                    const values = TWPT.DuelClothCalc.calculateValues(itemObjects, playerLevel, sets, setObjects);
+                    const values = TWPT.DuelClothCalc.getSkillValuesFromItemKeys(playerLevel, itemKeys);
                     const popupData = TWPT.DuelClothCalc.getPopupData(values);
 
                     const duelistPopup = TWPT.DuelClothCalc.generateNpcPopup(popupData, weaponId, this.resp);
@@ -359,6 +355,14 @@
                     const overlayClass = this.window.find("div.overlay");
                     overlayClass.removeClass("overlay");
                 };
+            },
+
+            getSkillValuesFromItemKeys (playerLevel, itemKeys) {
+                const itemObjects = TWPT.DuelClothCalc.getItemObjects(itemKeys);
+                const sets = TWPT.DuelClothCalc.getSetsNumbers(itemObjects);
+                const setObjects = TWPT.DuelClothCalc.getSetData(sets);
+
+                return TWPT.DuelClothCalc.calculateValues(itemObjects, playerLevel, sets, setObjects);
             },
 
             getItemObjects (itemKeys) {
@@ -561,6 +565,61 @@
                     }
                 }
             });
+
+            // call TWPTClothCalc.getRealSkillValuesFormatted(playerLevel, [key1, key2, ...]) to get added and formatted values.
+            // call TWPTClothCalc.getSkillValues(playerLevel, [key1, key2, ...]) to get naked values.
+            TWPTClothCalc = {
+                getRealSkillValuesFormatted (playerLevel, itemKeys) {
+                    const values = TWPT.DuelClothCalc.getSkillValuesFromItemKeys(playerLevel, itemKeys);
+                    return {
+                        strength: {
+                            build: values.strength + values.build,
+                            punch: values.strength + values.punch,
+                            tough: values.strength + values.tough,
+                            endurance: values.strength + values.endurance,
+                            health: values.strength + values.health,
+                        },
+
+                        flexibility: {
+                            ride: values.flexibility + values.ride,
+                            reflex: values.flexibility + values.reflex,
+                            dodge: values.flexibility + values.dodge,
+                            hide: values.flexibility + values.hide,
+                            swim: values.flexibility + values.swim,
+                        },
+
+                        dexterity: {
+                            aim: values.dexterity + values.aim,
+                            shot: values.dexterity + values.shot,
+                            pitfall: values.dexterity + values.pitfall,
+// eslint-disable-next-line camelcase
+                            finger_dexterity: values.dexterity + values.finger_dexterity,
+                            repair: values.dexterity + values.repair,
+                        },
+
+                        charisma: {
+                            leadership: values.charisma + values.leadership,
+                            tactic: values.charisma + values.tactic,
+                            trade: values.charisma + values.trade,
+                            animal: values.charisma + values.animal,
+                            appearance: values.charisma + values.appearance,
+                        },
+
+                        duelValues: {
+                            shot: values.dexterity + values.shot,
+                            punch: values.strength + values.punch,
+                            aim: values.dexterity + values.aim,
+                            appearance: values.charisma + values.appearance,
+                            tactic: values.charisma + values.tactic,
+                            reflex: values.flexibility + values.reflex,
+                            dodge: values.flexibility + values.dodge,
+                            tough: values.strength + values.tough,
+                            health: values.strength + values.health,
+                        },
+                    };
+                },
+                getSkillValues: TWPT.DuelClothCalc.getSkillValuesFromItemKeys,
+            };
         } catch (err) {
             console.log(err.stack);
         }
