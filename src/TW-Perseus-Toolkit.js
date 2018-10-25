@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.2.0
+// @version     0.3.0
 // @grant       none
 // ==/UserScript==
 
@@ -24,13 +24,14 @@
             base64: {
                 menuImage: "url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABmgAwAEAAAAAQAAABkAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIABkAGQMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/3QAEAAL/2gAMAwEAAhEDEQA/APHLTT9Z1bU7101HUApunA2t8qgHp0rqbXwHq0ttuOo6kGI67zXpX7PEA1bw5rGmGCF3S6llRmAGMOSQTjjI5r0iNLRtEvpBEgCNEA2QNoO7+eBXwmPzDFqs4wdld213sfQUIUlH3o3/AOCfJHjfw54i8PKsrajqSLhHG9iMgkeorpvt93/z9Tf9917h+0FdaMPAWvQ3yJNeyWkK2I8v5rVgvLFv4geDtFeBbx6frXuZZiJ1qT53do4qyXNeKsf/0PP/AIdePv8AhHW1TTGvmtop7lvMHK5AbPb612yfEjRfIZBfwFWxkZPOOmRXmV1/rR9Kb2r5fE5LSxE/aOTR7VLHSpR5eVMu/E74gx6zaPZ28jTGQqhbDEkZ6fhUGW/55tUEf+tH1FSV3YXDQwkOSBz1q0q0rs//2Q==')",
             },
-            version: "0.2.0",
+            version: "0.3.0",
             settingsKey: "TWPT_preferences",
             defaultPreferences: {
                 JobHighlighter: true,
                 CinemaSkipButton: true,
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
+                NineTimesFifteenButton: true,
             },
             preferences: {},
             currentZoom: 1,
@@ -109,6 +110,7 @@
                 setCheckBox("CinemaSkipButton", "Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).");
                 setCheckBox("ZoomMap", "Enable the Zoom feature (hover the minimap icon on the top right and scroll up / down to zoom out / in).");
                 setCheckBox("DisablePremiumNotifications", "Suppress energy refill and automation premium notifications.");
+                setCheckBox("NineTimesFifteenButton", "Add a button to job windows which allows you to start 9x 15 second jobs at once.");
                 setTitle("Feedback");
                 scrollPane.appendContent("<ul style=\"margin-left:15px;line-height:18px;\">" +
                     "<li>Send a message to <a target=\"_blank\" href=\"https://www.the-west.de/?ref=west_invite_linkrl&player_id=83071&world_id=1&hash=0dc5\">Mr. Perseus on world DE1</a></li>" +
@@ -224,6 +226,33 @@
                 };
                 Premium.checkForAutomationPremium = function (callback, failCallback) {
                     if (typeof failCallback !== "undefined") return failCallback();
+                };
+            },
+        };
+
+        TWPT.NineTimesFifteenButton = {
+            init () {
+                // eslint-disable-next-line camelcase
+                JobWindow.backup_initView = JobWindow.initView;
+                JobWindow.initView = function () {
+                    JobWindow.backup_initView.apply(this, arguments);
+                    const button = new west.gui.Button("9x 15s", () => {
+                        button.disable();
+                        const jobAmountNum = this.window.divMain.getElementsByClassName("job-amount-num")[0];
+                        const numberBefore = jobAmountNum.innerHTML;
+                        jobAmountNum.innerHTML = "9";
+                        $(".job_durationbar.job_durationbar_short").click();
+                        setTimeout(() => {
+                            button.enable();
+                            jobAmountNum.innerHTML = numberBefore;
+                        }, 5000);
+                    });
+
+                    const buttonDiv = button.getMainDiv();
+                    buttonDiv.style["z-index"] = "5";
+                    buttonDiv.style.bottom = "25px";
+                    buttonDiv.style.left = "300px";
+                    this.window.divMain.querySelector("div.tw2gui_window_content_pane").appendChild(button.getMainDiv());
                 };
             },
         };
