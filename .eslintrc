@@ -21,7 +21,8 @@
     "PlayerProfileWindow": true,
     "PlayerProfileMain": true,
     "Premium": true,
-    "UserMessage": true
+    "UserMessage": true,
+    "JobWindow": true
   },
   "rules": {
     "no-console": "off",
@@ -39,7 +40,7 @@
     "no-array-constructor": "error",
     "array-callback-return": "error",
     /* DESTRUCTURING */
-    "prefer-destructuring": "error",
+    //"prefer-destructuring": "error",
     /* STRING */
     "prefer-template": "error",
     "template-curly-spacing": "error",
