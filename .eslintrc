@@ -9,6 +9,7 @@
   },
   "globals": {
     "JobList": true,
+    "Chat": true,
     "CinemaWindow": true,
     "Map": true,
     "west": true,

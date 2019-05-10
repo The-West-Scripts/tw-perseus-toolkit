@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.3.0
+// @version     0.3.1
 // @grant       none
 // ==/UserScript==
 
@@ -32,6 +32,8 @@
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
                 NineTimesFifteenButton: true,
+                // EXTENDEND FEATURES
+                ChatImprovements: true,
                 // MoreFifteenSec: true,
                 DuelClothCalc: true,
             },
@@ -116,6 +118,7 @@
                 setCheckBox("NineTimesFifteenButton", "Add a button to job windows which allows you to start 9x 15 second jobs at once.");
 
                 setTitle("Perseus Toolkit Extended");
+                setCheckBox("ChatImprovements", "Enable Chat improvements: show online / idle status in Saloon chat.");
                 // setCheckBox("MoreFifteenSec", "Adds buttons to jobs which allow you to start a job 25 / 50 / unlimited times.");
                 setCheckBox("DuelClothCalc", "Enable duel cloth calc (hover a persons profile picture to calculate duel values). WARNING: this overwrites bounties!");
 
@@ -261,6 +264,21 @@
                     buttonDiv.style.bottom = "25px";
                     buttonDiv.style.left = "300px";
                     this.window.divMain.querySelector("div.tw2gui_window_content_pane").appendChild(button.getMainDiv());
+                };
+            },
+        };
+
+        TWPT.ChatImprovements = {
+            init () {
+                /*Chat.Resource.Client.prototype.updateStatus = function () {
+                    const idle = (new Date().getTime() - this.actioned) > 300000;
+                    console.log("IDLE", idle);
+                    this.setStatus(idle ? Chat.Resource.Client.STATUS_IDLE : Chat.Resource.Client.STATUS_ONLINE);
+                    return this;
+                };*/
+
+                Chat.Resource.Client.prototype.isStranger = function () {
+                    return false;
                 };
             },
         };
