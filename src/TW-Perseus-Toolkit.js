@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.3.1
+// @version     0.3.2
 // @grant       none
 // ==/UserScript==
 
@@ -24,7 +24,7 @@
             base64: {
                 menuImage: "url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABmgAwAEAAAAAQAAABkAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIABkAGQMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/3QAEAAL/2gAMAwEAAhEDEQA/APHLTT9Z1bU7101HUApunA2t8qgHp0rqbXwHq0ttuOo6kGI67zXpX7PEA1bw5rGmGCF3S6llRmAGMOSQTjjI5r0iNLRtEvpBEgCNEA2QNoO7+eBXwmPzDFqs4wdld213sfQUIUlH3o3/AOCfJHjfw54i8PKsrajqSLhHG9iMgkeorpvt93/z9Tf9917h+0FdaMPAWvQ3yJNeyWkK2I8v5rVgvLFv4geDtFeBbx6frXuZZiJ1qT53do4qyXNeKsf/0PP/AIdePv8AhHW1TTGvmtop7lvMHK5AbPb612yfEjRfIZBfwFWxkZPOOmRXmV1/rR9Kb2r5fE5LSxE/aOTR7VLHSpR5eVMu/E74gx6zaPZ28jTGQqhbDEkZ6fhUGW/55tUEf+tH1FSV3YXDQwkOSBz1q0q0rs//2Q==')",
             },
-            version: "0.3.1",
+            version: "0.3.2",
             settingsKey: "TWPT_preferences",
             defaultPreferences: {
                 JobHighlighter: true,
@@ -39,6 +39,7 @@
             },
             preferences: {},
             currentZoom: 1,
+            chatPeople: {},
             serverUrl: window.location.hostname.split(/[.0-9]+/)[0],
         };
 
@@ -270,15 +271,59 @@
 
         TWPT.ChatImprovements = {
             init () {
-                /*Chat.Resource.Client.prototype.updateStatus = function () {
-                    const idle = (new Date().getTime() - this.actioned) > 300000;
-                    console.log("IDLE", idle);
-                    this.setStatus(idle ? Chat.Resource.Client.STATUS_IDLE : Chat.Resource.Client.STATUS_ONLINE);
-                    return this;
-                };*/
-
                 Chat.Resource.Client.prototype.isStranger = function () {
+                    TWPT.chatPeople[this.playerId] = {
+                        actioned: this.actioned,
+                        statusId: this.statusId,
+                    };
+
                     return false;
+                };
+
+
+                // eslint-disable-next-line camelcase
+                PlayerProfileMain.backup_setProfileDesc = PlayerProfileMain.setProfileDesc;
+                PlayerProfileMain.setProfileDesc = function () {
+                    PlayerProfileMain.backup_setProfileDesc.apply(this, arguments);
+
+                    const getStatusString = function (statusId) {
+                        switch (statusId) {
+                            case 0:
+                                return "offline";
+                            case 2:
+                                return "idle";
+                            case 3:
+                                return "online";
+                            default:
+                                return "unknown";
+                        }
+                    };
+
+                    const getLastOnlineString = function (lastOnlineMinutesTotal) {
+                        const lastOnlineHours = Math.floor(lastOnlineMinutesTotal / 60);
+                        const lastOnlineMinutes = lastOnlineMinutesTotal % 60;
+
+                        let lastOnlineString = `${lastOnlineMinutes} min`;
+                        if (lastOnlineHours > 0) {
+                            lastOnlineString = `${lastOnlineHours} hours, ${lastOnlineString}`;
+                        }
+
+                        return lastOnlineString;
+                    };
+
+                    const playerStatusObject = TWPT.chatPeople[this.resp.playerid];
+                    let outString = `Status: ${getStatusString(playerStatusObject && playerStatusObject.statusId)}`;
+
+                    if (playerStatusObject) {
+                        outString += `, Last online: ${getLastOnlineString(Math.floor((new Date().getTime() - playerStatusObject.actioned) / 60 / 1000))} ago`;
+                    }
+
+                    const selectableProfile = this.window.find("div.selectable");
+                    if (selectableProfile.length > 0) {
+                        const oldHtml = selectableProfile.html();
+                        outString += `<br><br>${oldHtml}`;
+                        selectableProfile.html(outString);
+                    }
                 };
             },
         };
@@ -581,6 +626,7 @@
                     weapon = ItemManager.get(weaponId);
                     damage = weapon.getDamage(character);
                 }
+                // noinspection HtmlRequiredAltAttribute
                 return `<table class="dln_npcskill_popup">${
                         weapon ? "<tr><td colspan=\"5\" class=\"text_bold\">" + "The opponent's skill bonus" + "<br />&nbsp;</td></tr>" : ""
                         }<tr><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_shot.jpg" /></td><td><img src="https://west${TWPT.serverUrl}.innogamescdn.com/images/window/duels/npcskill_punch.jpg" /></td>` +
