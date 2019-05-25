@@ -34,11 +34,13 @@
                 NineTimesFifteenButton: true,
                 // EXTENDEND FEATURES
                 ChatImprovements: true,
+                DisconnectChat: false,
                 // MoreFifteenSec: true,
                 DuelClothCalc: true,
             },
             preferences: {},
             currentZoom: 1,
+            // showState: 0, // 0: don't modify, 1: show idle, 2: show online
             chatPeople: {},
             serverUrl: window.location.hostname.split(/[.0-9]+/)[0],
         };
@@ -120,6 +122,7 @@
 
                 setTitle("Perseus Toolkit Extended");
                 setCheckBox("ChatImprovements", "Enable Chat improvements: show online / idle status in Saloon chat.");
+                setCheckBox("DisconnectChat", "Disconnects you from all chats and shows you as offline. Please refresh the page after changing.");
                 // setCheckBox("MoreFifteenSec", "Adds buttons to jobs which allow you to start a job 25 / 50 / unlimited times.");
                 setCheckBox("DuelClothCalc", "Enable duel cloth calc (hover a persons profile picture to calculate duel values). WARNING: this overwrites bounties!");
 
@@ -271,6 +274,33 @@
 
         TWPT.ChatImprovements = {
             init () {
+                /*setInterval(() => {
+                    console.log(`TWPT.showState ${TWPT.showState}`, Chat.MyClient);
+
+                    // eslint-disable-next-line camelcase
+                    Chat.Resource.Client.prototype.backup_setActioned = Chat.Resource.Client.prototype.setActioned;
+
+                    // eslint-disable-next-line camelcase
+                    Chat.Resource.Client.prototype.twpt_setActioned = function (actioned) {
+                        console.log("::");
+                        if (!this.actioned) this.actioned = 0;
+                        if (this.myself) {
+                            console.log("------------------TRUE!!");
+                        } else {
+                            this.actioned = Math.max(this.actioned, actioned || 0);
+                        }
+                        console.log(Math.floor((new Date().getTime() - this.actioned) / 60 / 1000));
+                        return this;
+                    };
+
+                    Chat.Resource.Client.prototype.setActioned = TWPT.showState === 1 ?
+                        Chat.Resource.Client.prototype.twpt_setActioned : Chat.Resource.Client.prototype.backup_setActioned;
+
+                    if (TWPT.showState === 2) {
+                        Chat.MyClient.setActioned(new Date().getTime()).updateStatus();
+                    }
+                }, 10000);*/
+
                 Chat.Resource.Client.prototype.isStranger = function () {
                     TWPT.chatPeople[this.playerId] = {
                         actioned: this.actioned,
@@ -325,6 +355,13 @@
                         selectableProfile.html(outString);
                     }
                 };
+            },
+        };
+
+        TWPT.DisconnectChat = {
+            init () {
+                document.getElementById("ui_chat").remove();
+                Chat = undefined;
             },
         };
 
