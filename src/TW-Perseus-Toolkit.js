@@ -501,7 +501,7 @@
                                 $(
                                     '.job_durationbar.job_durationbar_short',
                                 ).click();
-                                smallCounter--;
+                                smallCounter -= 1;
                                 if (smallCounter >= 1) {
                                     setTimeout(
                                         clickJobOnce,
@@ -728,18 +728,17 @@
                     const ceilValue = Math.ceil(values[key] * playerLevel);
                     values[key] = Math.round(ceilValue * itemPercent);
                     if (values[key] === ceilValue && itemPercent !== 1) {
-                        values[key]++;
+                        values[key] += 1;
                     }
                 });
             },
 
             addToValues(values, newValues) {
-                Object.keys(newValues).forEach(
-                    (key) =>
-                        (values[key] = values[key]
-                            ? values[key] + newValues[key]
-                            : newValues[key]),
-                );
+                Object.keys(newValues).forEach((key) => {
+                    values[key] = values[key]
+                        ? values[key] + newValues[key]
+                        : newValues[key];
+                });
             },
 
             getBonusObjectValues(item) {
@@ -775,12 +774,12 @@
             getSimpleObjectValues(itemObject) {
                 const values = {};
 
-                Object.keys(itemObject.bonus.skills).forEach(
-                    (key) => (values[key] = itemObject.bonus.skills[key]),
-                );
-                Object.keys(itemObject.bonus.attributes).forEach(
-                    (key) => (values[key] = itemObject.bonus.attributes[key]),
-                );
+                Object.keys(itemObject.bonus.skills).forEach((key) => {
+                    values[key] = itemObject.bonus.skills[key];
+                });
+                Object.keys(itemObject.bonus.attributes).forEach((key) => {
+                    values[key] = itemObject.bonus.attributes[key];
+                });
 
                 return values;
             },
@@ -792,7 +791,7 @@
                         const valuesSetBonus = {};
                         const valuesSetSimple = {};
 
-                        for (let index = 2; index <= sets[key]; index++) {
+                        for (let index = 2; index <= sets[key]; index += 1) {
                             const valuesSetBonusLevel = TWPT.DuelClothCalc.getBonusObjectValues(
                                 setData.bonus[index],
                             );
@@ -839,8 +838,13 @@
                 const sets = {};
                 itemObjects.forEach((itemObject) => {
                     if (itemObject.set) {
-                        if (sets.hasOwnProperty(itemObject.set)) {
-                            sets[itemObject.set]++;
+                        if (
+                            Object.prototype.hasOwnProperty.call(
+                                sets,
+                                itemObject.set,
+                            )
+                        ) {
+                            sets[itemObject.set] += 1;
                         } else {
                             sets[itemObject.set] = 1;
                         }
@@ -921,6 +925,7 @@
 
             // call TWPTClothCalc.getRealSkillValuesFormatted(playerLevel, [key1, key2, ...]) to get added and formatted values.
             // call TWPTClothCalc.getSkillValues(playerLevel, [key1, key2, ...]) to get naked values.
+            /* eslint-disable no-undef */
             TWPTClothCalc = {
                 getRealSkillValuesFormatted(playerLevel, itemKeys) {
                     const values = TWPT.DuelClothCalc.getSkillValuesFromItemKeys(
@@ -975,6 +980,7 @@
                         },
                     };
                 },
+                /* eslint-enable no-undef */
                 getSkillValues: TWPT.DuelClothCalc.getSkillValuesFromItemKeys,
             };
         } catch (err) {

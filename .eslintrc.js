@@ -15,7 +15,8 @@ module.exports = {
         'prettier/prettier': ['warn'],
         'func-names': 'off',
         'prefer-rest-params': 'off',
-        'no-console': ['warn', { allow: ['error'] }],
+        'no-param-reassign': 'off',
+        'no-console': 'off',
     },
     globals: {
         CinemaWindow: true,
@@ -27,5 +28,9 @@ module.exports = {
         UserMessage: true,
         JobWindow: true,
         GameLoader: true,
+        Chat: true,
+        PlayerProfileMain: true,
+        Character: true,
+        ItemManager: true,
     },
 };
