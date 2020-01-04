@@ -333,7 +333,17 @@
 
         TWPT.HideDrawingMap = {
             init() {
-                GameLoader.next = function() {};
+                GameLoader.backup_twpt_async = GameLoader.async;
+                GameLoader.async = function(message, signal, callback, max) {
+                    GameLoader.backup_twpt_async(
+                        message,
+                        signal,
+                        callback,
+                        max,
+                        true,
+                        true,
+                    );
+                };
             },
         };
 
@@ -347,13 +357,13 @@
                     } catch (err) {
                         console.error(
                             `TWPT Error with feature "${property}".`,
-                            err.stack,
+                            err,
                         );
                     }
                 }
             });
         } catch (err) {
-            console.error(err.stack);
+            console.error('TWPT ERROR', err);
         }
     });
 });
