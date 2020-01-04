@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     0.3.0
+// @version     0.4.0
 // @grant       none
 // ==/UserScript==
 
@@ -32,6 +32,7 @@
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
                 NineTimesFifteenButton: true,
+                HideDrawingMap: true,
             },
             preferences: {},
             currentZoom: 1,
@@ -150,6 +151,10 @@
                 setCheckBox(
                     'NineTimesFifteenButton',
                     'Add a button to job windows which allows you to start 9x 15 second jobs at once.',
+                );
+                setCheckBox(
+                    'HideDrawingMap',
+                    'Hides "Drawing Map" flag which is buggy sometimes.',
                 );
                 setTitle('Feedback');
                 scrollPane.appendContent(
@@ -323,6 +328,12 @@
                         .querySelector('div.tw2gui_window_content_pane')
                         .appendChild(button.getMainDiv());
                 };
+            },
+        };
+
+        TWPT.HideDrawingMap = {
+            init() {
+                GameLoader.next = function() {};
             },
         };
 

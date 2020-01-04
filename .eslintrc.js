@@ -26,5 +26,6 @@ module.exports = {
         Premium: true,
         UserMessage: true,
         JobWindow: true,
+        GameLoader: true,
     },
 };
