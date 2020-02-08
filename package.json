@@ -1,4 +1,17 @@
 {
+  "name": "tw-perseus-toolkit",
+  "version": "1.0.0",
+  "author": "mr-perseus",
+  "license": "MIT",
+  "description": "Userscript for The West. Provides useful features",
+  "main": "src/TW-Perseus-Toolkit.js.js",
+  "scripts": {
+    "test": "eslint src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-West-Scripts/tw-perseus-toolkit.git"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
@@ -7,10 +20,10 @@
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "14.0.0",
-    "eslint-config-prettier": "6.7.0",
+    "eslint-config-prettier": "6.10.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-prettier": "3.1.2",
-    "husky": "^3.1.0",
+    "husky": "^4.2.1",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1"
   }
