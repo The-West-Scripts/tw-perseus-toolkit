@@ -8,3 +8,8 @@ Userscript for The West. Provides useful features:
 -   Disable premium notifications for energy (refill) and automation.
 -   Button in job windows which allows you to start 9x 15 second jobs with one click.
 -   Hide "Drawing Map" flag
+-   Show online / idle status in saloon.
+
+Download from Greasyfork: https://greasyfork.org/en/scripts/370137-the-west-perseus-toolkit
+
+Report a bug on GitHub: https://github.com/The-West-Scripts/tw-perseus-toolkit/issues/new
