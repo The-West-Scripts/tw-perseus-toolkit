@@ -4,7 +4,7 @@
   "author": "mr-perseus",
   "license": "MIT",
   "description": "Userscript for The West. Provides useful features",
-  "main": "src/TW-Perseus-Toolkit.js.js",
+  "main": "script.user.js",
   "scripts": {
     "test": "eslint src"
   },
