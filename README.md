@@ -8,11 +8,11 @@ Userscript for The West. Provides useful features.
 
 **Highlight Silver / Gold Jobs**  
 Highlight Silver / Gold Jobs (it doesn't search them by it's own)  
-<img src="img/silver-highlight.png" width="30%" />
+<img src="img/silver-highlight.jpg" width="30%" />
 
 **Skip cinema videos**  
 Button to skip cinema videos after 5 seconds  
-<img src="img/cinema-skip.jpg" width="30%" />
+<img src="img/cinema-skip.png" width="30%" />
 
 **Zoom**  
 Zoom the map in and out (hover the minimap icon on the top right and scroll up / down)
