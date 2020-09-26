@@ -7,7 +7,7 @@
 // @include     http://*.the-west.*/game.php*
 // @include     https://*.tw.innogames.*/game.php*
 // @include     http://*.tw.innogames.*/game.php*
-// @version     1.0.1
+// @version     1.1.0
 // @grant       none
 // ==/UserScript==
 
@@ -24,10 +24,9 @@
                 menuImage:
                     "url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABmgAwAEAAAAAQAAABkAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIABkAGQMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/3QAEAAL/2gAMAwEAAhEDEQA/APHLTT9Z1bU7101HUApunA2t8qgHp0rqbXwHq0ttuOo6kGI67zXpX7PEA1bw5rGmGCF3S6llRmAGMOSQTjjI5r0iNLRtEvpBEgCNEA2QNoO7+eBXwmPzDFqs4wdld213sfQUIUlH3o3/AOCfJHjfw54i8PKsrajqSLhHG9iMgkeorpvt93/z9Tf9917h+0FdaMPAWvQ3yJNeyWkK2I8v5rVgvLFv4geDtFeBbx6frXuZZiJ1qT53do4qyXNeKsf/0PP/AIdePv8AhHW1TTGvmtop7lvMHK5AbPb612yfEjRfIZBfwFWxkZPOOmRXmV1/rR9Kb2r5fE5LSxE/aOTR7VLHSpR5eVMu/E74gx6zaPZ28jTGQqhbDEkZ6fhUGW/55tUEf+tH1FSV3YXDQwkOSBz1q0q0rs//2Q==')",
             },
-            version: '1.0.1',
+            version: '1.1.0',
             settingsKey: 'TWPT_preferences',
             defaultPreferences: {
-                JobHighlighter: true,
                 CinemaSkipButton: true,
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
@@ -134,10 +133,6 @@
 
                 setTitle('Enabled Features');
                 setCheckBox(
-                    'JobHighlighter',
-                    "Enable Silver / Gold job highlighter (doesn't search for them on it's own).",
-                );
-                setCheckBox(
                     'CinemaSkipButton',
                     'Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).',
                 );
@@ -171,44 +166,6 @@
                 );
 
                 win.appendToContentPane(scrollPane.getMainDiv());
-            },
-        };
-
-        TWPT.JobHighlighter = {
-            init() {
-                $('head').append(
-                    '<style type="text/css">' +
-                        '.jobgroup.silver {background-color: rgba(192, 192, 192, .7); border-radius: 10%; } ' +
-                        '.jobgroup.gold {background-color: rgba(255, 215, 0, .7); border-radius: 10%; }' +
-                        '</style>',
-                );
-
-                Map.Component.JobGroup.prototype.backup_twpt_getAdditionalClasses =
-                    Map.Component.JobGroup.prototype.getAdditionalClasses;
-                Map.Component.JobGroup.prototype.getAdditionalClasses = function(
-                    tileX,
-                    tileY,
-                ) {
-                    let backupClasses = Map.Component.JobGroup.prototype.backup_twpt_getAdditionalClasses.apply(
-                        this,
-                        arguments,
-                    );
-                    const featuredJobs =
-                        Map.JobHandler.Featured[
-                            `${this.getLeft(tileX)}-${this.getTop(tileY)}`
-                        ] || {};
-
-                    Object.keys(featuredJobs).forEach((property) => {
-                        if (featuredJobs[property].gold) {
-                            backupClasses += ' gold';
-                        }
-                        if (featuredJobs[property].silver) {
-                            backupClasses += ' silver';
-                        }
-                    });
-
-                    return backupClasses;
-                };
             },
         };
 
