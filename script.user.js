@@ -27,6 +27,7 @@
             version: '1.1.0',
             settingsKey: 'TWPT_preferences',
             defaultPreferences: {
+                JobHighlighter: true,
                 CinemaSkipButton: true,
                 ZoomMap: true,
                 DisablePremiumNotifications: true,
@@ -133,6 +134,10 @@
 
                 setTitle('Enabled Features');
                 setCheckBox(
+                    'JobHighlighter',
+                    "Enable Silver / Gold job highlighter (doesn't search for them on it's own).",
+                );
+                setCheckBox(
                     'CinemaSkipButton',
                     'Enable the Cinema Skip button (allows to skip cinema videos after 5 seconds).',
                 );
@@ -169,6 +174,44 @@
             },
         };
 
+        TWPT.JobHighlighter = {
+            init() {
+                $('head').append(
+                    '<style type="text/css">' +
+                        '.jobgroup.silver {background-color: rgba(192, 192, 192, .7); border-radius: 10%; } ' +
+                        '.jobgroup.gold {background-color: rgba(255, 215, 0, .7); border-radius: 10%; }' +
+                        '</style>',
+                );
+
+                Map.Component.JobGroup.prototype.backup_twpt_getAdditionalClasses =
+                    Map.Component.JobGroup.prototype.getAdditionalClasses;
+                Map.Component.JobGroup.prototype.getAdditionalClasses = function(
+                    tileX,
+                    tileY,
+                ) {
+                    let backupClasses = Map.Component.JobGroup.prototype.backup_twpt_getAdditionalClasses.apply(
+                        this,
+                        arguments,
+                    );
+                    const featuredJobs =
+                        Map.JobHandler.Featured[
+                            `${this.getLeft(tileX)}-${this.getTop(tileY)}`
+                        ] || {};
+
+                    Object.keys(featuredJobs).forEach((property) => {
+                        if (featuredJobs[property].gold) {
+                            backupClasses += ' gold';
+                        }
+                        if (featuredJobs[property].silver) {
+                            backupClasses += ' silver';
+                        }
+                    });
+
+                    return backupClasses;
+                };
+            },
+        };
+
         TWPT.CinemaSkipButton = {
             init() {
                 const button = new west.gui.Button('Skip ad', () => {
@@ -181,7 +224,8 @@
                     button.disable();
 
                     // Uncomment the following line if you want to access rewards directly.
-                    // if (key === "video") return CinemaWindow.backup_twpt_cotroller("rewards");
+                    if (key === 'video')
+                        return CinemaWindow.backup_twpt_cotroller('rewards');
 
                     if (key === 'video') {
                         let count = 5;
